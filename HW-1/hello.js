@@ -16,7 +16,7 @@ const server = http.createServer((req, res) => {
         res.write(JSON.stringify(message));
         res.end();
     })
-    console.log(method)
+    
 
 }).listen(3000, () => console.log('Server is listening on 3000 port'))
 
