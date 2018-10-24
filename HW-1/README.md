@@ -12,5 +12,7 @@ go to catalog HW-1
 
 and just type: node hello.js
 
-You can check is it works in Your favorite browser. localhost:3000/hello
+You can check is it works in Your favorite browser. 
+
+http://localhost:3000/hello
 
