@@ -3,22 +3,22 @@ const http = require('http')
 const server = http.createServer((req, res) => {
 
     const {method, url} = req;
-    const path = url.replace(/^\/+|\/+$/g, '')
+    const path = url.replace(/^\/+|\/+$/g, '');
 
     let chosenHandler = typeof(router[path]) !== 'undefined' ? router[path] : handlers.notFound;
-    data =  { method, url, path}
+    data =  { method, url, path};
     chosenHandler(data, (statusCode, message) => {
         statusCode = typeof(statusCode) == 'number' ? statusCode : 200;
-        message = typeof(message) == 'object' ? message : {'message' : 'Object is empty'}
+        message = typeof(message) == 'object' ? message : {'message' : 'Object is empty'};
         res.writeHead(statusCode, {
             'Content-Type': 'application/json'
-        })
+        });
         res.write(JSON.stringify(message));
         res.end();
-    })
+    });
     
 
-}).listen(3000, () => console.log('Server is listening on 3000 port'))
+}).listen(3000, () => console.log('Server is listening on 3000 port'));
 
 
 
@@ -30,7 +30,7 @@ const handlers = {
     notFound : (data, callback) => {
         callback(404);
     }
-}
+};
 const router = {
     'hello' : handlers.hello
 };
