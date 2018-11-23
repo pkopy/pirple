@@ -8,9 +8,10 @@
 const http = require('http');
 const https = require('https')
 const url = require('url');
-const config = require('./config');
+const config = require('./lib/config');
 const fs = require('fs');
-
+const handlers = require('./lib/handlers');
+const helpers = require('./lib/helpers');
 
 
 // Instantiate the HTTP Server
@@ -60,10 +61,11 @@ const unifiedServer = ((req, res) => {
   req.on('data', data => {
     //Get the payload, if any
     payload = Buffer.from(data).toString();
+    
   });
 
   req.on('end', () => {
-
+    console.log(helpers.parseJsonToObject(payload).pass)
     //Choose the handler this request should go to, if one is not found choose the notFound handler
     const chosenHandler = typeof(router[trimmedPath]) !== 'undefined' ? router[trimmedPath] : handlers.notFound;
 
@@ -73,7 +75,7 @@ const unifiedServer = ((req, res) => {
       queryStringObject,
       method,
       headers,
-      payload
+      'payload' : helpers.parseJsonToObject(payload)
     };
 
     //Route the request to handler specified in the router
@@ -99,20 +101,11 @@ const unifiedServer = ((req, res) => {
   });
 });
 
-//Define the handlers
-const handlers = {};
 
-//Ping handler
-handlers.ping = ((data,callback) => {
-  callback(200);
-})
-
-//Not found handler 
-handlers.notFound = ((data, callback) => {
-  callback(404);
-})
 
 //Define a request router
 const router = {
-  'ping' : handlers.ping
+  'ping' : handlers.ping,
+  'users' : handlers.users,
+  'tokens' : handlers.tokens
 }

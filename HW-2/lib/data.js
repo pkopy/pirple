@@ -6,7 +6,8 @@
 
 //Dependencies
 const fs = require('fs');
-const path = require('path')
+const path = require('path');
+const helpers = require('./helpers');
 
 //Container for the module (to be exported)
 const lib = {};
@@ -46,7 +47,12 @@ lib.create = (dir, file, data, callback) => {
 //Read data from the file
 lib.read = (dir, file, callback) => {
   fs.readFile(lib.baseDir + dir + '/' + file + '.json', 'utf8', (err, data) => {
-    callback(err, data)
+    if(!err && data) {
+      const parsedDate = helpers.parseJsonToObject(data);
+      callback(false, parsedDate);
+    } else {
+      callback(err, data)
+    }
   });
 };
 
@@ -89,7 +95,6 @@ lib.update = (dir, file, data, callback) => {
 //Delete a file
 lib.delete = (dir, file, callback) => {
   //Unlink the file
-
   fs.unlink(lib.baseDir + dir + '/' + file + '.json', err => {
     if(!err) {
       callback(false)
