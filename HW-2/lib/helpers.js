@@ -6,7 +6,9 @@
 
 //Dependencies
 const crypto = require('crypto');
-const config = require('./config')
+const config = require('./config');
+const https = require('https');
+const querystring = require('querystring');
 
 // Container for all the helpers
 const helpers = {};
@@ -54,6 +56,85 @@ helpers.createRandomString = (strLength) => {
   }
 
 };
+
+/*
+//Send an SMS message via Twilio
+helpers.sendTwilioSms = ((phone, msg, callback) => {
+  //Validate the parameters
+  phone = typeof(phone) == 'string' && phone.trim().length == 9 ? phone.trim() : false;
+  msg = typeof(msg) == 'string' && msg.trim().length > 0 && msg.trim().length <= 160 ? msg.trim() : false;
+  
+
+  if(phone && msg) {
+    //Configure the request payload
+    const payload = {
+      'from' : config.twilio.fromPhone,
+      'to' : '+48' + phone,
+      'body' : msg
+    };
+    //Stringify the payload
+    const stringPayload = querystring.stringify(payload);
+    
+    //Configure the request details
+    const requestDetails = {
+      'from' : config.twilio.fromPhone,
+      'to' : '+48' + phone,
+      'body' : msg,
+      'protocol' : 'https:',
+      'hostname' : 'api.twilio.com',
+      'method' : 'POST',
+      'path' : `/2010-04-01/Accounts/${config.twilio.accountSid}/Messages.json`,
+      'auth' : `${config.twilio.accountSid}:${config.twilio.authToken}`,
+      'headers' : {
+        'Content-Type' : 'application/x-www-from-urlencoded',
+        'Contenet-Length' : Buffer.byteLength(stringPayload)
+      }
+    };
+
+    //Instantiate the request object
+    const req = https.request(requestDetails, (res) => {
+      //Grab the ststus of the sent request
+      const status = res.statusCode;
+      // console.log(res)
+      //Calbback successfully if the request went through
+      if(status == 200 || status == 201) {
+        callback(false);
+      } else {
+        callback(`Status code returned was ${status}`)
+      }
+    });
+
+    //Bind to the error event so it does not get thrown
+    req.on('error', (e) => {
+      callback(e);
+    });
+
+    //Add the payload
+    req.write(stringPayload);
+
+    //End the request
+    req.end();
+  } else {
+    callback('Given parameters were missing or invalid');
+  }
+});
+*/
+
+//Send an SMS message via Twilio
+helpers.sendTwilioSms = ((phone, msg, callback) => {
+  const accountSid = config.twilio.accountSid;
+  const authToken = config.twilio.authToken;
+  const client = require('twilio')(accountSid, authToken);
+
+  client.messages
+  .create({
+     body: msg,
+     from: config.twilio.fromPhone,
+     to: `+48${phone}`
+   })
+  .then(callback(false))
+  .done();
+});
 
 //Export the module
 module.exports = helpers;
