@@ -30,7 +30,7 @@ handlers._users.post = ((data, callback) => {
   //Check that all required fields are filled out
   const firstName = typeof(data.payload.firstName) == 'string' && data.payload.firstName.trim().length > 0 ? data.payload.firstName.trim() : false;
   const lastName = typeof(data.payload.lastName) == 'string' && data.payload.lastName.trim().length > 0 ? data.payload.lastName.trim() : false;
-  const phone = typeof(data.payload.phone) == 'string' && data.payload.phone.trim().length == 10 ? data.payload.phone.trim() : false;
+  const phone = typeof(data.payload.phone) == 'string' && data.payload.phone.trim().length == 9 ? data.payload.phone.trim() : false;
   const password = typeof(data.payload.password) == 'string' && data.payload.password.trim().length > 0 ? data.payload.password.trim() : false;
   const tosAgreement = typeof(data.payload.tosAgreement) == 'boolean' && data.payload.tosAgreement == true ? true : false;
 
@@ -78,7 +78,7 @@ handlers._users.post = ((data, callback) => {
 // @TODO Only let the authenticated user access to their object, Dont let them access anyone elses
 handlers._users.get = ((data, callback) => {
   //Check that the phone number is valid
-  const phone = typeof(data.queryStringObject.phone) == 'string' && data.queryStringObject.phone.trim().length == 10 ? data.queryStringObject.phone.trim() : false;
+  const phone = typeof(data.queryStringObject.phone) == 'string' && data.queryStringObject.phone.trim().length == 9 ? data.queryStringObject.phone.trim() : false;
   if(phone) {
     //Get the token from the headers
     const token = typeof(data.headers.token) =='string' ? data.headers.token : false;
@@ -110,7 +110,7 @@ handlers._users.get = ((data, callback) => {
 
 handlers._users.put = ((data, callback) => {
   //Check that the phone number is valid
-  const phone = typeof(data.payload.phone) == 'string' && data.payload.phone.trim().length == 10 ? data.payload.phone.trim() : false;
+  const phone = typeof(data.payload.phone) == 'string' && data.payload.phone.trim().length == 9 ? data.payload.phone.trim() : false;
 
   //Check that the optional fields
   const firstName = typeof(data.payload.firstName) == 'string' && data.payload.firstName.trim().length > 0 ? data.payload.firstName.trim() : false;
@@ -173,7 +173,7 @@ handlers._users.put = ((data, callback) => {
 
 handlers._users.delete = ((data, callback) => {
   //Check that this phone number is valid
-  const phone = typeof(data.queryStringObject.phone) == 'string' && data.queryStringObject.phone.trim().length == 10 ? data.queryStringObject.phone.trim() : false;
+  const phone = typeof(data.queryStringObject.phone) == 'string' && data.queryStringObject.phone.trim().length == 9 ? data.queryStringObject.phone.trim() : false;
   if(phone) {
 
     //Get the token from the headers
@@ -248,7 +248,7 @@ handlers._tokens = {};
 //Required data: phone, password
 //Optional data: none
 handlers._tokens.post = (data, callback) => {
-  const phone = typeof(data.payload.phone) == 'string' && data.payload.phone.trim().length == 10 ? data.payload.phone.trim() : false;
+  const phone = typeof(data.payload.phone) == 'string' && data.payload.phone.trim().length == 9 ? data.payload.phone.trim() : false;
   const password = typeof(data.payload.password) == 'string' && data.payload.password.trim().length > 0 ? data.payload.password.trim() : false;
   if(phone && password) {
     //Lookup the user who matches the phone number
