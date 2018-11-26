@@ -12,7 +12,9 @@ const https = require('https');
 const http = require('http');
 const helpers = require('./helpers');
 const url = require('url');
-const _logs = require('./logs')
+const _logs = require('./logs');
+const util = require('util');
+const debug = util.debuglog('workers');
 
 //Instantiate the worker object
 const workers = {};
@@ -29,12 +31,12 @@ workers.gatherAllChecks = () => {
             //Pass it to the check validator, and let function contiune or logs error as needed
             workers.validateCheckData(originalCheckData)
           } else {
-            console.log('Error reading one of the checks data')
+            debug('Error reading one of the checks data')
           }
         });
       });
     } else {
-      console.log('Error: Could not find any checks to process');
+      debug('Error: Could not find any checks to process');
     }
   });
 };
@@ -64,7 +66,7 @@ workers.validateCheckData = ((originalCheckData) => {
   originalCheckData.timeoutSeconds) {
     workers.performCheck(originalCheckData);
   } else {
-    console.log('Error: One of the checks is not properly formatted. Skiping it');
+    debug('Error: One of the checks is not properly formatted. Skiping it');
   }
 });
 
@@ -168,10 +170,10 @@ workers.processCheckOutcome = ((originalCheckData, checkOutcome) => {
       if(alertWarranted) {
         workers.alertUserToStatusChange(newCheckData);
       } else {
-        console.log('Check outcome has not changed, no alert needed');
+        debug('Check outcome has not changed, no alert needed');
       }
     } else {
-      console.log("Error trying to save update to one of the checks");
+      debug("Error trying to save update to one of the checks");
     }
   }));
 });
@@ -181,9 +183,9 @@ workers.alertUserToStatusChange = (newCheckData) => {
   const msg = `Alert: Your check for ${newCheckData.method.toUpperCase()} ${newCheckData.protocol}://${newCheckData.url} is currently ${newCheckData.state}`;
   helpers.sendTwilioSms(newCheckData.userPhone, msg, (err) => {
     if(!err) {
-      console.log('Success! User was alerted to a status change in their check, via sms', msg);
+      debug('Success! User was alerted to a status change in their check, via sms', msg);
     } else {
-      console.log('Error: Could not send sms alert to user who had a state change in their check');
+      debug('Error: Could not send sms alert to user who had a state change in their check');
     }
   });
 }; 
@@ -208,9 +210,9 @@ workers.log = (originalCheckData, checkOutcome, state, alertWarranted, timeOfChe
   //Append the logString to the file
   _logs.append(logFileName, logString, (err) => {
     if(!err) {
-      console.log("Logging to file succeeded");
+      debug("Logging to file succeeded");
     } else {
-      console.log("Logging to file failed");
+      debug("Logging to file failed");
 
     }
   });
@@ -221,7 +223,7 @@ workers.log = (originalCheckData, checkOutcome, state, alertWarranted, timeOfChe
 workers.loop = () => {
   setInterval(() => {
     workers.gatherAllChecks();
-  }, 1000 * 5);
+  }, 1000 * 30);
 };
 
 //Rotate (compress) the log file
@@ -237,18 +239,18 @@ workers.rotateLogs = () => {
             //Truncated the log
             _logs.truncate(logId, (err) => {
               if(!err) {
-                console.log('Successed truncating logFile');
+                debug('Successed truncating logFile');
               } else {
-                console.log('Error truncating logFile')
+                debug('Error truncating logFile')
               }
             });
           } else {
-            console.log('Error compressing one of the log files', err)
+            debug('Error compressing one of the log files', err)
           }
         });
       });
     } else {
-      console.log('Error : Could not find any logs to rotate')
+      debug('Error : Could not find any logs to rotate')
     }
   });
 };
@@ -263,6 +265,9 @@ workers.logRotationLoop = () => {
 
 //Init script
 workers.init = () => {
+  //Send console in yellow
+  console.log('\x1b[33m%s\x1b[0m', 'Background workers are running')
+
   //Execute all the checks immediately
   workers.gatherAllChecks();
 
