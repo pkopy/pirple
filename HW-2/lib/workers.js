@@ -12,6 +12,7 @@ const https = require('https');
 const http = require('http');
 const helpers = require('./helpers');
 const url = require('url');
+const _logs = require('./logs')
 
 //Instantiate the worker object
 const workers = {};
@@ -150,10 +151,15 @@ workers.processCheckOutcome = ((originalCheckData, checkOutcome) => {
   //decide if an alert is warranted
   const alertWarranted = originalCheckData.lastChecked && originalCheckData.state !== state ? true : false;
   
+  //Log the outcome
+  const timeOfCheck = Date.now();
+  workers.log(originalCheckData, checkOutcome, state, alertWarranted, timeOfCheck)
+  
   //Update the check data
   const newCheckData = originalCheckData;
   newCheckData.state = state;
-  newCheckData.lastChecked = Date.now();
+  newCheckData.lastChecked = timeOfCheck;
+
 
   //Save the updates
   _data.update('checks', newCheckData.id, newCheckData, ((err) => {
@@ -171,7 +177,7 @@ workers.processCheckOutcome = ((originalCheckData, checkOutcome) => {
 });
 
 //Alert the user as to a change in their check status
-workers.alertUserToStatusChange = ((newCheckData) => {
+workers.alertUserToStatusChange = (newCheckData) => {
   const msg = `Alert: Your check for ${newCheckData.method.toUpperCase()} ${newCheckData.protocol}://${newCheckData.url} is currently ${newCheckData.state}`;
   helpers.sendTwilioSms(newCheckData.userPhone, msg, (err) => {
     if(!err) {
@@ -180,13 +186,78 @@ workers.alertUserToStatusChange = ((newCheckData) => {
       console.log('Error: Could not send sms alert to user who had a state change in their check');
     }
   });
-}); 
+}; 
+
+//Logs
+workers.log = (originalCheckData, checkOutcome, state, alertWarranted, timeOfCheck) => {
+  //Form the log data
+  const logData = {
+    'check': originalCheckData,
+    'outcome' : checkOutcome,
+    state,
+    'alert' : alertWarranted,
+    'time' : timeOfCheck
+  };
+
+  const logString = JSON.stringify(logData);
+
+  //Determinate the name of the log file
+  const logFileName = originalCheckData.id;
+  
+
+  //Append the logString to the file
+  _logs.append(logFileName, logString, (err) => {
+    if(!err) {
+      console.log("Logging to file succeeded");
+    } else {
+      console.log("Logging to file failed");
+
+    }
+  });
+
+};
 
 //Timer to execute the worker-process once per minute
 workers.loop = () => {
   setInterval(() => {
     workers.gatherAllChecks();
-  }, 1000 * 60)
+  }, 1000 * 5);
+};
+
+//Rotate (compress) the log file
+workers.rotateLogs = () => {
+  //List all the (non compressed) log files
+  _logs.list(false, (err, logs) => {
+    if(!err && logs && logs.length > 0) {
+      logs.forEach((logName) => {
+        const logId = logName.replace('.log', '');
+        const newFileId = logId + '-' + Date.now();
+        _logs.compress(logId, newFileId, (err) => {
+          if(!err) {
+            //Truncated the log
+            _logs.truncate(logId, (err) => {
+              if(!err) {
+                console.log('Successed truncating logFile');
+              } else {
+                console.log('Error truncating logFile')
+              }
+            });
+          } else {
+            console.log('Error compressing one of the log files', err)
+          }
+        });
+      });
+    } else {
+      console.log('Error : Could not find any logs to rotate')
+    }
+  });
+};
+
+//Timer to execute the log-rotation process once per day
+workers.logRotationLoop = () => {
+  setInterval(() => {
+    // workers.rotateLogs();
+  }, 1000 * 60 *60 * 24);
 };
 
 
@@ -194,8 +265,15 @@ workers.loop = () => {
 workers.init = () => {
   //Execute all the checks immediately
   workers.gatherAllChecks();
+
   //Call the loop so the checks will execute letaer on
   workers.loop();
+
+  //Compress the log immediately
+  workers.rotateLogs();
+
+  //Call the compression loop so logs will be compressed later on
+  workers.logRotationLoop();
 };
 
 //Export the module

@@ -13,7 +13,7 @@ const helpers = require('./helpers');
 const lib = {};
 
 //Base directory for the data folder
-lib.baseDir = path.join(__dirname, '/../.data/')
+lib.baseDir = path.join(__dirname, '/../.data/');
 
 //Write data to a file
 lib.create = (dir, file, data, callback) => {
