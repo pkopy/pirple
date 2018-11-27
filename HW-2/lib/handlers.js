@@ -6,7 +6,8 @@
 //Dependencies
 const _data = require('./data');
 const helpers = require('./helpers');
-const config = require('./config')
+const config = require('./config');
+
 //Define the handlers
 const handlers = {};
 

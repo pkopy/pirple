@@ -18,6 +18,8 @@ app.init = () => {
 
   //Start the workers
   workers.init();
+
+  
 };
 
 //Execute
