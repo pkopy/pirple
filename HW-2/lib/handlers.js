@@ -6,8 +6,7 @@
 //Dependencies
 const _data = require('./data');
 const helpers = require('./helpers');
-const config = require('./config');
-
+const config = require('./config')
 //Define the handlers
 const handlers = {};
 
@@ -27,7 +26,7 @@ handlers._users = {};
 //Users - post
 //Required data: firstName, lastName, phone, password, tosAgreement
 //Optional data: none
-handlers._users.post = ((data, callback) => {
+handlers._users.post = (data, callback) => {
   //Check that all required fields are filled out
   const firstName = typeof(data.payload.firstName) == 'string' && data.payload.firstName.trim().length > 0 ? data.payload.firstName.trim() : false;
   const lastName = typeof(data.payload.lastName) == 'string' && data.payload.lastName.trim().length > 0 ? data.payload.lastName.trim() : false;
@@ -71,12 +70,12 @@ handlers._users.post = ((data, callback) => {
   } else {
     callback(400, {'Error' : "Missing required fields"})
   }
-});
+};
 
 //Users - get
 //Required data: phone
 //Optional data: none
-// @TODO Only let the authenticated user access to their object, Dont let them access anyone elses
+
 handlers._users.get = ((data, callback) => {
   //Check that the phone number is valid
   const phone = typeof(data.queryStringObject.phone) == 'string' && data.queryStringObject.phone.trim().length == 9 ? data.queryStringObject.phone.trim() : false;
@@ -109,7 +108,7 @@ handlers._users.get = ((data, callback) => {
 //Required data: phone
 //Optional data: firstName, lastName, password (at least one must be specified)
 
-handlers._users.put = ((data, callback) => {
+handlers._users.put = (data, callback) => {
   //Check that the phone number is valid
   const phone = typeof(data.payload.phone) == 'string' && data.payload.phone.trim().length == 9 ? data.payload.phone.trim() : false;
 
@@ -141,7 +140,7 @@ handlers._users.put = ((data, callback) => {
               }
     
               //Store the new update
-              _data.update('users', phone, userData, err => {
+              _data.update('users', phone, userData, (err) => {
                 if(!err) {
                   callback(200);
                 } else {
@@ -166,13 +165,13 @@ handlers._users.put = ((data, callback) => {
     callback(400, {'Error' : 'Missing required field'})
   }
 
-});
+};
 
 //Users - delete
 //Required data: phone
 //Optional data: none
 
-handlers._users.delete = ((data, callback) => {
+handlers._users.delete = (data, callback) => {
   //Check that this phone number is valid
   const phone = typeof(data.queryStringObject.phone) == 'string' && data.queryStringObject.phone.trim().length == 9 ? data.queryStringObject.phone.trim() : false;
   if(phone) {
@@ -230,7 +229,7 @@ handlers._users.delete = ((data, callback) => {
     callback(400, {'Error' : 'Missing required field'})
   }
 
-});
+};
 
 //Tokens handler
 handlers.tokens = ((data, callback) =>{
